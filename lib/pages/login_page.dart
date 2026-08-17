@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sistema_loginn/pages/home_page.dart';
+import 'package:sistema_loginn/services/api_service.dart';
 import '../dados_mock.dart';
 import 'cadastro_page.dart';
 
@@ -16,6 +17,8 @@ class _LoginPageState extends State<LoginPage>{
   final TextEditingController senhaController = TextEditingController();
 
   bool esconderSenha = true;
+  bool carregando = false;
+
 
   void mostrarMensagem(String mensagem){
     ScaffoldMessenger.of(context).showSnackBar(
@@ -25,9 +28,11 @@ class _LoginPageState extends State<LoginPage>{
     );
   }
 
-  void entrar(){
+  Future<void> entrar() async{
     String email = emailController.text.trim();
     String senha = senhaController.text;
+
+
 
     if(email.isEmpty || senha.isEmpty){
       mostrarMensagem(
@@ -36,36 +41,58 @@ class _LoginPageState extends State<LoginPage>{
       return;
     }
 
-    Map<String, String>? usuarioEncotrado;
+    // Map<String, String>? usuarioEncotrado;
 
-    for(var usuario in usuarios){
-       if (
-        usuario['email'] == email && 
-        usuario['senha'] == senha
-       ){       
-        usuarioEncotrado = usuario;        
-        break;
-       }
+    // for(var usuario in usuarios){
+    //    if (
+    //     usuario['email'] == email && 
+    //     usuario['senha'] == senha
+    //    ){       
+    //     usuarioEncotrado = usuario;        
+    //     break;
+    //    }
+    // }
+    
+    
+    setState(() {
+      carregando = true;
+    });
+
+    final resultado = await ApiService.login(
+      email: email, 
+      senha: senha
+    );
+
+    setState(() {
+      carregando = false;
+    });
+
+    if(resultado['sucesso'] == true){
+        final dados = resultado['dados'];
+        final usuario  = dados[usuarios];
+
+        String nome = usuario['nome']?? "Usuario";
+        String emailUsuario = usuario['email'] ?? email;
+
+        Navigator.pushReplacement(
+          context, 
+          MaterialPageRoute(
+            builder: (context) => HomePage(
+              nomeUsuario: nome,
+              emailUsuario: email,
+            ),
+          ),
+        );
     }
 
-    if(usuarioEncotrado == null){
+    if(resultado['sucesso'] == false){
       mostrarMensagem(
         'E-mail ou senha incorretos.'
       );
       return;
     }
 
-    String nome = usuarioEncotrado['nome'] ?? 'Usuário';
-
-    Navigator.pushReplacement(
-      context, 
-      MaterialPageRoute(
-        builder: (context) => HomePage(
-          nomeUsuario: nome,
-          emailUsuario: email,
-        ),
-      ),
-    );
+    
 
   }
 
@@ -98,6 +125,7 @@ class _LoginPageState extends State<LoginPage>{
           children: [
             const SizedBox(height: 40,),
 
+            
             const Icon(
               Icons.account_circle,
               size: 100,
@@ -162,7 +190,7 @@ class _LoginPageState extends State<LoginPage>{
 
             ElevatedButton.icon(
               onPressed: entrar, 
-              icon: Icon(Icons.login) ,
+              icon: carregando ? const CircularProgressIndicator() :const Icon(Icons.login),
               label: const Text('Entrar')
             ),
 
