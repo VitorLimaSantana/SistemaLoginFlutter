@@ -54,43 +54,88 @@ class _LoginPageState extends State<LoginPage>{
     // }
     
     
+    // setState(() {
+    //   carregando = true;
+    // });
+
+    // final resultado = await ApiService.login(
+    //   email: email, 
+    //   senha: senha
+    // );
+
+    // setState(() {
+    //   carregando = false;
+    // });
+
+    // if(resultado['sucesso'] == true){
+
+    //     final usuario = resultado['dados'];
+
+    //     String nome = usuario['nome'] ?? 'Usuario';
+    //     String emailUsuario = usuario['email'] ?? email;
+              
+
+    //     Navigator.pushReplacement(
+    //       context, 
+    //       MaterialPageRoute(
+    //         builder: (context) => HomePage(
+    //           nomeUsuario: nome,
+    //           emailUsuario: email,
+    //         ),
+    //       ),
+    //     );
+    // }
     setState(() {
       carregando = true;
     });
 
     final resultado = await ApiService.login(
-      email: email, 
-      senha: senha
+      email: email,
+      senha: senha,
     );
 
     setState(() {
       carregando = false;
     });
 
-    if(resultado['sucesso'] == true){
-        final dados = resultado['dados'];
-        final usuario  = dados[usuarios];
+    if (resultado['sucesso'] == true) {
+      final usuario = resultado['dados']['usuario'];
 
-        String nome = usuario['nome']?? "Usuario";
-        String emailUsuario = usuario['email'] ?? email;
+      
 
-        Navigator.pushReplacement(
-          context, 
-          MaterialPageRoute(
-            builder: (context) => HomePage(
-              nomeUsuario: nome,
-              emailUsuario: email,
-            ),
+      print(usuario);
+
+      if (usuario == null || usuario is! Map<String, dynamic>) {
+        mostrarMensagem('Dados do usuário inválidos.');
+        return;
+      }
+
+      final String nome = usuario['nome'] ?? 'Usuario';
+      final String emailUsuario = usuario['email'] ?? email;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(
+            nomeUsuario: nome,
+            emailUsuario: emailUsuario,
           ),
-        );
-    }
-
-    if(resultado['sucesso'] == false){
-      mostrarMensagem(
-        'E-mail ou senha incorretos.'
+        ),
       );
+
       return;
     }
+
+    mostrarMensagem(
+      resultado['mensagem'] ?? 'E-mail ou senha incorretos.',
+    );
+
+    // if(resultado['sucesso'] == false){
+    //   mostrarMensagem(
+    //     'E-mail ou senha incorretos.'
+    //   );
+    //   return;
+    // }
 
     
 
