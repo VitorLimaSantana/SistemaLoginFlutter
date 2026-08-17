@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sistema_loginn/pages/home_page.dart';
 import '../dados_mock.dart';
+import 'cadastro_page.dart';
 
 class LoginPage extends StatefulWidget{
     const LoginPage({super.key});
@@ -40,15 +42,46 @@ class _LoginPageState extends State<LoginPage>{
        if (
         usuario['email'] == email && 
         usuario['senha'] == senha
-       ){
-        mostrarMensagem(
-        'Login realizado com sucesso',
-      );
-        // usuarioEncotrado = usuario;
+       ){       
+        usuarioEncotrado = usuario;        
         break;
        }
     }
 
+    if(usuarioEncotrado == null){
+      mostrarMensagem(
+        'E-mail ou senha incorretos.'
+      );
+      return;
+    }
+
+    String nome = usuarioEncotrado['nome'] ?? 'Usuário';
+
+    Navigator.pushReplacement(
+      context, 
+      MaterialPageRoute(
+        builder: (context) => HomePage(
+          nomeUsuario: nome,
+          emailUsuario: email,
+        ),
+      ),
+    );
+
+  }
+
+  void abrirCadastro(){
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CadastroPage()),
+    );
+  }
+
+  @override
+  void dispose(){
+    emailController.dispose();
+    senhaController.dispose();
+
+    super.dispose();
   }
    
   @override
@@ -136,7 +169,7 @@ class _LoginPageState extends State<LoginPage>{
              const SizedBox(height: 10),
 
              OutlinedButton.icon(
-              onPressed: (){}, 
+              onPressed: abrirCadastro, 
               icon: Icon(Icons.person_add) ,
               label: const Text('Criar usuário'),
             )
